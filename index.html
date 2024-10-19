@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Postagens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .postagem {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #007BFF;
+        }
+
+        button {
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #newPostForm {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        #newPostForm input,
+        #newPostForm textarea {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Minhas Postagens</h1>
+    <div id="postContainer"></div>
+    <form id="newPostForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="text" id="postTitle" placeholder="Título" required>
+        <textarea id="postContent" rows="4" placeholder="Conteúdo da postagem" required></textarea>
+        <button type="submit">Criar Postagem</button>
+    </form>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            loadPosts();
+
+            document.getElementById('newPostForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                createPost();
+            });
+        });
+
+        function createPost() {
+            const username = document.getElementById('username').value;
+            const postTitle = document.getElementById('postTitle').value;
+            const postContent = document.getElementById('postContent').value;
+
+            if (!username) {
+                alert('Por favor, adicione um username antes de postar.');
+                return;
+            }
+
+            const post = {
+                username: username,
+                title: postTitle,
+                content: postContent,
+                likes: 0
+            };
+
+            let posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.push(post);
+            localStorage.setItem('posts', JSON.stringify(posts));
+
+            addPostToDOM(post);
+            document.getElementById('newPostForm').reset();
+        }
+
+        function loadPosts() {
+            let posts = JSON.parse(localStorage.getItem('posts')) || [];
+            document.getElementById('postContainer').innerHTML = '';
+            posts.forEach(post => addPostToDOM(post));
+        }
+
+        function addPostToDOM(post) {
+            const postContainer = document.getElementById('postContainer');
+
+            const postDiv = document.createElement('div');
+            postDiv.className = 'postagem';
+
+            const postUsername = document.createElement('h3');
+            postUsername.textContent = 'Postado por: ' + post.username;
+            postDiv.appendChild(postUsername);
+
+            const postTitle = document.createElement('h2');
+            postTitle.textContent = post.title;
+            postDiv.appendChild(postTitle);
+
+            const postContent = document.createElement('p');
+            postContent.textContent = post.content;
+            postDiv.appendChild(postContent);
+
+            const likeButton = document.createElement('button');
+            likeButton.textContent = 'Curtir';
+            likeButton.addEventListener('click', function() {
+                post.likes++;
+                localStorage.setItem('posts', JSON.stringify(JSON.parse(localStorage.getItem('posts')).map(p => {
+                    if (p.username === post.username && p.title === post.title && p.content === post.content) {
+                        p.likes = post.likes;
+                    }
+                    return p;
+                })));
+                likeCount.textContent = 'Curtidas: ' + post.likes;
+            });
+            postDiv.appendChild(likeButton);
+
+            const likeCount = document.createElement('p');
+            likeCount.textContent = 'Curtidas: ' + post.likes;
+            postDiv.appendChild(likeCount);
+
+            postContainer.appendChild(postDiv);
+        }
+    </script>
+</body>
+</html>
